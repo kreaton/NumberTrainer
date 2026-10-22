@@ -1,0 +1,332 @@
+﻿@page "/"
+@using NumberTrainer.Components
+@using NumberTrainer.Models
+@using NumberTrainer.Services
+@inject AudioPlayer Audio
+@implements IDisposable
+
+<PageTitle>@T("title")</PageTitle>
+
+@if (!_inGame)
+{
+    <main class="setup">
+        <h1>🔢 @T("title")</h1>
+
+        <section class="group">
+            <h2>@T("language")</h2>
+            <div class="choices">
+                @foreach (var language in Enum.GetValues<Language>())
+                {
+                    <button class="choice @Selected(_settings.Language == language)"
+                            aria-pressed="@(_settings.Language == language)"
+                            @onclick="() => _settings.Language = language">
+                        <Flag Language="language" />
+                        <span class="label">@(language == Language.Danish ? "Dansk" : "English")</span>
+                    </button>
+                }
+            </div>
+        </section>
+
+        <section class="group">
+            <h2>@T("level")</h2>
+            <div class="choices">
+                @foreach (var level in Enum.GetValues<Level>())
+                {
+                    var range = new GameSettings { Level = level }.Range;
+                    <button class="choice @Selected(_settings.Level == level)"
+                            aria-pressed="@(_settings.Level == level)"
+                            @onclick="() => _settings.Level = level">
+                        <span class="icon">@LevelIcon(level)</span>
+                        <span class="label">@T(level.ToString())</span>
+                        <span class="hint">@range.Min–@range.Max</span>
+                    </button>
+                }
+            </div>
+        </section>
+
+        <section class="group">
+            <h2>@T("mode")</h2>
+            <div class="choices">
+                @foreach (var mode in Enum.GetValues<GameMode>())
+                {
+                    <button class="choice @Selected(_settings.Mode == mode)"
+                            aria-pressed="@(_settings.Mode == mode)"
+                            @onclick="() => _settings.Mode = mode">
+                        <span class="icon">@ModeIcon(mode)</span>
+                        <span class="label">@T(mode.ToString())</span>
+                    </button>
+                }
+            </div>
+        </section>
+
+        <section class="group">
+            <h2>⏱️ @T("delay")</h2>
+            <label class="delay">
+                <input type="range" min="1" max="10" step="1"
+                       @bind="_settings.DelaySeconds" @bind:event="oninput"
+                       aria-label="@T("delay")" />
+                <span class="delay-value">@_settings.DelaySeconds @T("seconds")</span>
+            </label>
+        </section>
+
+        <button class="start" @onclick="StartGame">▶ @T("start")</button>
+    </main>
+}
+else
+{
+    <main class="game">
+        <header class="bar">
+            <button class="icon-btn" @onclick="StopGame" title="@T("back")" aria-label="@T("back")">🏠</button>
+            <div class="bar-info">
+                <Flag Language="_settings.Language" />
+                <span class="icon">@LevelIcon(_settings.Level)</span>
+                <span class="icon">@ModeIcon(_settings.Mode)</span>
+            </div>
+        </header>
+
+        <div class="card @(_highlight is not null ? "speaking" : "") @(_phase == Phase.Countdown ? "thinking" : "")">
+            @if (_numberVisible)
+            {
+                <div class="number">
+                    @if (_current >= 10)
+                    {
+                        <span class="digit @Lit(SoundPart.Tens)">@(_current / 10)</span><span class="digit @Lit(SoundPart.Ones)">@(_current % 10)</span>
+                    }
+                    else
+                    {
+                        <span class="digit @Lit(SoundPart.Whole)">@_current</span>
+                    }
+                </div>
+            }
+            else
+            {
+                @* Empty placeholder keeps the card from jumping when the number appears. *@
+                <div class="number hidden" aria-label="@T("listen")"><span class="digit">0</span></div>
+            }
+
+            <div class="word" aria-live="polite">
+                @if (_phase == Phase.Countdown)
+                {
+                    <div class="say-it">
+                        <span class="say-icon" aria-hidden="true">🗣️</span>
+                        <span>@T("sayIt")</span>
+                    </div>
+                }
+                else if (_wordVisible)
+                {
+                    @for (var i = 0; i < _word.Length; i++)
+                    {
+                        <span class="letter @(i < _spelled ? "shown" : "")">@_word[i]</span>
+                    }
+                }
+            </div>
+
+            <div class="countdown @(_phase == Phase.Countdown ? "" : "idle")">
+                @if (_phase == Phase.Countdown)
+                {
+                    <div @key="_round" class="countdown-fill" style="animation-duration: @(_settings.DelaySeconds)s"></div>
+                }
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="action repeat" disabled="@(_phase != Phase.Done)" @onclick="Repeat">
+                <span class="icon">🔁</span><span>@T("repeat")</span>
+            </button>
+            <button class="action next" @onclick="NextRound">
+                <span class="icon">➡️</span><span>@T("next")</span>
+            </button>
+        </div>
+    </main>
+}
+
+@code {
+    private enum Phase { Countdown, Playing, Done }
+
+    private const int PauseBetweenClipsMs = 250;
+    private const int LetterIntervalMs = 180;
+
+    private readonly GameSettings _settings = new();
+    private CancellationTokenSource? _cts;
+
+    private bool _inGame;
+    private Phase _phase;
+    private int _round;
+    private int _current = -1;
+    private string _word = "";
+    private bool _numberVisible;
+    private bool _wordVisible;
+    private int _spelled;
+    private SoundPart? _highlight;
+
+    private async Task StartGame()
+    {
+        _inGame = true;
+        var (min, max) = _settings.Range;
+        await Audio.PreloadAsync(Enumerable.Range(min, max - min + 1).Select(_settings.SoundUrl));
+        await NextRound();
+    }
+
+    private async Task StopGame()
+    {
+        _cts?.Cancel();
+        await Audio.StopAsync();
+        _inGame = false;
+        _current = -1;
+    }
+
+    private async Task NextRound()
+    {
+        var ct = await RestartAsync();
+
+        _round++;
+        _current = PickNumber();
+        _word = NumberWords.ToWords(_current, _settings.Language);
+        _spelled = 0;
+        _wordVisible = false;
+
+        try
+        {
+            if (_settings.Mode == GameMode.NumberThenSound)
+            {
+                _numberVisible = true;
+                _phase = Phase.Countdown;
+                StateHasChanged();
+                await Task.Delay(TimeSpan.FromSeconds(_settings.DelaySeconds), ct);
+
+                _phase = Phase.Playing;
+                _wordVisible = true;
+                _spelled = _word.Length;
+                await PlaySequence(ct);
+            }
+            else
+            {
+                _numberVisible = false;
+                _phase = Phase.Playing;
+                await PlaySequence(ct);
+
+                _phase = Phase.Countdown;
+                StateHasChanged();
+                await Task.Delay(TimeSpan.FromSeconds(_settings.DelaySeconds), ct);
+
+                _phase = Phase.Playing;
+                _numberVisible = true;
+                _wordVisible = true;
+                await Spell(ct);
+            }
+
+            _phase = Phase.Done;
+            StateHasChanged();
+        }
+        catch (OperationCanceledException)
+        {
+            // Next, repeat or home was pressed; whoever cancelled owns the state now.
+        }
+    }
+
+    private async Task Repeat()
+    {
+        var ct = await RestartAsync();
+        _phase = Phase.Playing;
+        try
+        {
+            await PlaySequence(ct);
+            _phase = Phase.Done;
+            StateHasChanged();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private async Task PlaySequence(CancellationToken ct)
+    {
+        var sequence = _settings.SoundSequence(_current);
+        for (var i = 0; i < sequence.Count; i++)
+        {
+            _highlight = sequence[i].Part;
+            StateHasChanged();
+            await Audio.PlayAsync(_settings.SoundUrl(sequence[i].Clip));
+            ct.ThrowIfCancellationRequested();
+            if (i < sequence.Count - 1)
+                await Task.Delay(PauseBetweenClipsMs, ct);
+        }
+        _highlight = null;
+        StateHasChanged();
+    }
+
+    private async Task Spell(CancellationToken ct)
+    {
+        while (_spelled < _word.Length)
+        {
+            _spelled++;
+            StateHasChanged();
+            await Task.Delay(LetterIntervalMs, ct);
+        }
+    }
+
+    /// <summary>Cancels whatever is running (countdown, sound, spelling) and returns a token for the new work.</summary>
+    private async Task<CancellationToken> RestartAsync()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+        var ct = _cts.Token;
+        _highlight = null;
+        await Audio.StopAsync();
+        return ct;
+    }
+
+    private int PickNumber()
+    {
+        var (min, max) = _settings.Range;
+        int n;
+        do n = Random.Shared.Next(min, max + 1);
+        while (n == _current);
+        return n;
+    }
+
+    private string Lit(SoundPart part) => _highlight == part || _highlight == SoundPart.Whole ? "lit" : "";
+
+    private static string Selected(bool selected) => selected ? "selected" : "";
+
+    private static string LevelIcon(Level level) => level switch
+    {
+        Level.Easy => "⭐",
+        Level.Medium => "⭐⭐",
+        _ => "⭐⭐⭐"
+    };
+
+    private static string ModeIcon(GameMode mode) =>
+        mode == GameMode.NumberThenSound ? "🔢➜🔊" : "🔊➜🔢";
+
+    private static readonly Dictionary<string, (string En, string Da)> Texts = new()
+    {
+        ["title"] = ("Number Trainer", "Taltræner"),
+        ["language"] = ("Language", "Sprog"),
+        ["level"] = ("Level", "Niveau"),
+        ["mode"] = ("Game", "Spil"),
+        ["delay"] = ("Thinking time", "Tænketid"),
+        ["seconds"] = ("sec", "sek"),
+        ["start"] = ("Start", "Start"),
+        ["back"] = ("Back", "Tilbage"),
+        ["repeat"] = ("Again", "Igen"),
+        ["next"] = ("Next", "Næste"),
+        ["listen"] = ("Listen", "Lyt"),
+        ["sayIt"] = ("Say the number out loud!", "Sig tallet højt!"),
+        [nameof(Level.Easy)] = ("Easy", "Let"),
+        [nameof(Level.Medium)] = ("Medium", "Mellem"),
+        [nameof(Level.Hard)] = ("Hard", "Svær"),
+        [nameof(GameMode.NumberThenSound)] = ("See, then hear", "Se, så hør"),
+        [nameof(GameMode.SoundThenNumber)] = ("Hear, then see", "Hør, så se"),
+    };
+
+    private string T(string key) =>
+        _settings.Language == Language.Danish ? Texts[key].Da : Texts[key].En;
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}
