@@ -26,6 +26,19 @@ Open the site in Safari and use **Share → Add to Home Screen**. It then opens 
 - iOS only allows sound after a tap, so the app primes its audio on the first tap anywhere on the page.
 - On iOS 17 and later, sound plays even when the silent switch is on. On older iOS, turn the silent switch off.
 
+### How clips are held in memory
+
+When a game starts, `audio.js` downloads every MP3 for the level so playback starts instantly. The files on the server are plain MP3s and never change; this is only about how the browser keeps them after downloading.
+
+- **Now:** each clip is turned into a `data:` URL, which is the whole sound written out as base64 text, and that is given to the audio player.
+- **Before:** each clip was turned into a `blob:` URL, a short temporary address pointing at the downloaded bytes.
+
+**Why:** Safari plays audio from a `blob:` address differently from a normal file, and Safari on iOS has a history of bugs where such audio fails to load or play. A `data:` URL contains the sound itself, so that can't happen. This is a precaution, not a reproduced bug; recent Safari versions usually handle `blob:` audio fine.
+
+**Cost:** base64 takes about a third more memory than the MP3. On Hard all 100 clips are loaded: about 2.4 MB of Danish MP3s (≈3.2 MB in memory) or 1.9 MB of English (≈2.5 MB). That is fine on any current phone.
+
+**To switch back,** change `.then(toDataUrl)` to `.then(b => URL.createObjectURL(b))` in `load()` in `wwwroot/js/audio.js`.
+
 ## Running it
 
 Requires the .NET 10 SDK.
