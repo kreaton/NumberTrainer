@@ -13,9 +13,6 @@ public enum GameMode
     SoundThenNumber
 }
 
-/// <summary>Which part of the number a clip speaks, so the UI can highlight it.</summary>
-public enum SoundPart { Tens, Ones, Whole }
-
 public sealed class GameSettings
 {
     public Language Language { get; set; } = Language.Danish;
@@ -29,12 +26,6 @@ public sealed class GameSettings
         Level.Medium => (1, 30),
         _ => (0, 99)
     };
-
-    /// <summary>On easy and medium a two-digit number is read digit by digit first: 31 = "three - one - thirty-one".</summary>
-    public IReadOnlyList<(int Clip, SoundPart Part)> SoundSequence(int number) =>
-        Level != Level.Hard && number >= 10
-            ? [(number / 10, SoundPart.Tens), (number % 10, SoundPart.Ones), (number, SoundPart.Whole)]
-            : [(number, SoundPart.Whole)];
 
     public string SoundUrl(int number) =>
         $"sounds/{(Language == Language.Danish ? "danish" : "english")}/speech{number}.mp3";

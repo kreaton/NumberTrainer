@@ -84,18 +84,11 @@ else
             </div>
         </header>
 
-        <div class="card @(_highlight is not null ? "speaking" : "") @(_phase == Phase.Countdown ? "thinking" : "")">
+        <div class="card @(_speaking ? "speaking" : "") @(_phase == Phase.Countdown ? "thinking" : "")">
             @if (_numberVisible)
             {
                 <div class="number">
-                    @if (_current >= 10)
-                    {
-                        <span class="digit @Lit(SoundPart.Tens)">@(_current / 10)</span><span class="digit @Lit(SoundPart.Ones)">@(_current % 10)</span>
-                    }
-                    else
-                    {
-                        <span class="digit @Lit(SoundPart.Whole)">@_current</span>
-                    }
+                    <span class="digit @(_speaking ? "lit" : "")">@_current</span>
                 </div>
             }
             else
@@ -143,7 +136,6 @@ else
 @code {
     private enum Phase { Countdown, Playing, Done }
 
-    private const int PauseBetweenClipsMs = 250;
     private const int LetterIntervalMs = 180;
 
     private readonly GameSettings _settings = new();
@@ -157,7 +149,13 @@ else
     private bool _numberVisible;
     private bool _wordVisible;
     private int _spelled;
-    private SoundPart? _highlight;
+    private bool _speaking;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await Audio.InitAsync();
+    }
 
     private async Task StartGame()
     {
@@ -197,13 +195,13 @@ else
                 _phase = Phase.Playing;
                 _wordVisible = true;
                 _spelled = _word.Length;
-                await PlaySequence(ct);
+                await PlayNumber(ct);
             }
             else
             {
                 _numberVisible = false;
                 _phase = Phase.Playing;
-                await PlaySequence(ct);
+                await PlayNumber(ct);
 
                 _phase = Phase.Countdown;
                 StateHasChanged();
@@ -230,7 +228,7 @@ else
         _phase = Phase.Playing;
         try
         {
-            await PlaySequence(ct);
+            await PlayNumber(ct);
             _phase = Phase.Done;
             StateHasChanged();
         }
@@ -239,19 +237,13 @@ else
         }
     }
 
-    private async Task PlaySequence(CancellationToken ct)
+    private async Task PlayNumber(CancellationToken ct)
     {
-        var sequence = _settings.SoundSequence(_current);
-        for (var i = 0; i < sequence.Count; i++)
-        {
-            _highlight = sequence[i].Part;
-            StateHasChanged();
-            await Audio.PlayAsync(_settings.SoundUrl(sequence[i].Clip));
-            ct.ThrowIfCancellationRequested();
-            if (i < sequence.Count - 1)
-                await Task.Delay(PauseBetweenClipsMs, ct);
-        }
-        _highlight = null;
+        _speaking = true;
+        StateHasChanged();
+        await Audio.PlayAsync(_settings.SoundUrl(_current));
+        ct.ThrowIfCancellationRequested();
+        _speaking = false;
         StateHasChanged();
     }
 
@@ -272,7 +264,7 @@ else
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
-        _highlight = null;
+        _speaking = false;
         await Audio.StopAsync();
         return ct;
     }
@@ -285,8 +277,6 @@ else
         while (n == _current);
         return n;
     }
-
-    private string Lit(SoundPart part) => _highlight == part || _highlight == SoundPart.Whole ? "lit" : "";
 
     private static string Selected(bool selected) => selected ? "selected" : "";
 

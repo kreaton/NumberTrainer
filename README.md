@@ -17,12 +17,14 @@ A small Blazor WebAssembly game for children learning the numbers 0–99 in **Da
 4. **Set the thinking time** (1–10 seconds, default 3). During it the card shows 🗣️ *"Sig tallet højt!" / "Say the number out loud!"*: the child should say the number before the answer comes.
 5. **🔁 Again / Igen** repeats the sound. **➡️ Next / Næste** goes to a new random number, even in the middle of a sound. **🏠** goes back to the start screen.
 
-On **easy** and **medium**, two-digit numbers are read digit by digit first, then as a whole, and each digit lights up as it is spoken:
+Each number is read once, and it lights up while it is spoken. The same number never comes twice in a row.
 
-- 31 in English: *three – one – thirty-one*
-- 31 in Danish: *tre – en – enogtredive*
+## iPhone and iPad
 
-On **hard** only the whole number is read. The same number never comes twice in a row.
+Open the site in Safari and use **Share → Add to Home Screen**. It then opens full screen as **Taltræner**, with its own icon (the Danish and British flags with a number).
+
+- iOS only allows sound after a tap, so the app primes its audio on the first tap anywhere on the page.
+- On iOS 17 and later, sound plays even when the silent switch is on. On older iOS, turn the silent switch off.
 
 ## Running it
 
@@ -53,14 +55,16 @@ The folders also contain a few Italian words (`stasera.mp3`, `venerdi.mp3`, …)
 | File | What it does |
 |---|---|
 | `Pages/Home.razor` | Start screen and game: rounds, thinking time, repeat/next, UI texts in both languages |
-| `Models/GameSettings.cs` | Language, level, mode, delay; number ranges; which clips to play for a number |
+| `Models/GameSettings.cs` | Language, level, mode, delay; number ranges; sound file for a number |
 | `Models/NumberWords.cs` | Spells 0–99 in English (*thirty-one*) and Danish (*enogtredive*) |
 | `Services/AudioPlayer.cs` | C# wrapper around `wwwroot/js/audio.js` |
-| `wwwroot/js/audio.js` | Preloads the level's clips and plays one clip at a time |
+| `wwwroot/js/audio.js` | Preloads the level's clips, plays one clip at a time, unlocks sound on iOS |
+| `wwwroot/icon.svg` | App icon source; the PNGs (`apple-touch-icon.png`, `icon-*.png`, `favicon-32.png`) are rendered from it |
+| `wwwroot/manifest.webmanifest` | Name and icons for "Add to Home Screen" |
 | `Components/Flag.razor` | Danish and British flags as inline SVG (flag emoji don't show on Windows) |
 | `wwwroot/css/app.css` | Styling, including dark mode and reduced motion |
 
 ## Known limits
 
 - Settings are not remembered between visits.
-- Sound on iPhone/iPad has not been tested.
+- The iOS handling follows Safari's rules but has not yet been tried on a real iPhone or iPad.
