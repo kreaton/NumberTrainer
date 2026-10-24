@@ -21,7 +21,7 @@
                             aria-pressed="@(_settings.Language == language)"
                             @onclick="() => _settings.Language = language">
                         <Flag Language="language" />
-                        <span class="label">@(language == Language.Danish ? "Dansk" : "English")</span>
+                        <span class="label">@(language == Language.Danish ? "Dansk" : "Engelsk")</span>
                     </button>
                 }
             </div>
@@ -70,6 +70,8 @@
         </section>
 
         <button class="start" @onclick="StartGame">▶ @T("start")</button>
+
+        <footer class="credits">Lavet med kærlighed 💛 (c) 2026 Per Hejndorf, Kreaton – @BuildInfo.Display</footer>
     </main>
 }
 else
@@ -130,6 +132,8 @@ else
                 <span class="icon">➡️</span><span>@T("next")</span>
             </button>
         </div>
+
+        <footer class="credits">Lavet med kærlighed 💛 (c) 2026 Per Hejndorf, Kreaton – @BuildInfo.Display</footer>
     </main>
 }
 
@@ -290,29 +294,29 @@ else
     private static string ModeIcon(GameMode mode) =>
         mode == GameMode.NumberThenSound ? "🔢➜🔊" : "🔊➜🔢";
 
-    private static readonly Dictionary<string, (string En, string Da)> Texts = new()
+    // The screen text is always Danish; the language choice only picks the number sounds and words.
+    private static readonly Dictionary<string, string> Texts = new()
     {
-        ["title"] = ("Number Trainer", "Taltræner"),
-        ["language"] = ("Language", "Sprog"),
-        ["level"] = ("Level", "Niveau"),
-        ["mode"] = ("Game", "Spil"),
-        ["delay"] = ("Thinking time", "Tænketid"),
-        ["seconds"] = ("sec", "sek"),
-        ["start"] = ("Start", "Start"),
-        ["back"] = ("Back", "Tilbage"),
-        ["repeat"] = ("Again", "Igen"),
-        ["next"] = ("Next", "Næste"),
-        ["listen"] = ("Listen", "Lyt"),
-        ["sayIt"] = ("Say the number out loud!", "Sig tallet højt!"),
-        [nameof(Level.Easy)] = ("Easy", "Let"),
-        [nameof(Level.Medium)] = ("Medium", "Mellem"),
-        [nameof(Level.Hard)] = ("Hard", "Svær"),
-        [nameof(GameMode.NumberThenSound)] = ("See, then hear", "Se, så hør"),
-        [nameof(GameMode.SoundThenNumber)] = ("Hear, then see", "Hør, så se"),
+        ["title"] = "Taltræner",
+        ["language"] = "Sprog",
+        ["level"] = "Niveau",
+        ["mode"] = "Spil",
+        ["delay"] = "Tænketid",
+        ["seconds"] = "sek",
+        ["start"] = "Start",
+        ["back"] = "Tilbage",
+        ["repeat"] = "Igen",
+        ["next"] = "Næste",
+        ["listen"] = "Lyt",
+        ["sayIt"] = "Sig tallet højt!",
+        [nameof(Level.Easy)] = "Let",
+        [nameof(Level.Medium)] = "Mellem",
+        [nameof(Level.Hard)] = "Svær",
+        [nameof(GameMode.NumberThenSound)] = "Se, så hør",
+        [nameof(GameMode.SoundThenNumber)] = "Hør, så se",
     };
 
-    private string T(string key) =>
-        _settings.Language == Language.Danish ? Texts[key].Da : Texts[key].En;
+    private static string T(string key) => Texts[key];
 
     public void Dispose()
     {

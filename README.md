@@ -4,18 +4,18 @@ A small Blazor WebAssembly game for children learning the numbers 0–99 in **Da
 
 ## How to play
 
-1. **Pick a language:** 🇩🇰 Dansk or 🇬🇧 English. The app's own texts switch language too.
+1. **Pick a language:** 🇩🇰 Dansk or 🇬🇧 Engelsk. This picks the number sounds and spelled words; the app's own texts are always Danish.
 2. **Pick a level**
    | Level | Icon | Numbers |
    |---|---|---|
-   | Easy / Let | ⭐ | 1–10 |
-   | Medium / Mellem | ⭐⭐ | 1–30 |
-   | Hard / Svær | ⭐⭐⭐ | 0–99 |
+   | Let (easy) | ⭐ | 1–10 |
+   | Mellem (medium) | ⭐⭐ | 1–30 |
+   | Svær (hard) | ⭐⭐⭐ | 0–99 |
 3. **Pick a game**
-   - **🔢➜🔊 See, then hear / Se, så hør:** the number is shown. After the thinking time the sound plays and the word appears.
-   - **🔊➜🔢 Hear, then see / Hør, så se:** the sound plays. After the thinking time the number appears and the word is spelled letter by letter.
-4. **Set the thinking time** (1–10 seconds, default 3). During it the card shows 🗣️ *"Sig tallet højt!" / "Say the number out loud!"*: the child should say the number before the answer comes.
-5. **🔁 Again / Igen** repeats the sound. **➡️ Next / Næste** goes to a new random number, even in the middle of a sound. **🏠** goes back to the start screen.
+   - **🔢➜🔊 Se, så hør (see, then hear):** the number is shown. After the thinking time the sound plays and the word appears.
+   - **🔊➜🔢 Hør, så se (hear, then see):** the sound plays. After the thinking time the number appears and the word is spelled letter by letter.
+4. **Set the thinking time** (1–10 seconds, default 3). During it the card shows 🗣️ *"Sig tallet højt!"* (say the number out loud): the child should say the number before the answer comes.
+5. **🔁 Igen** (again) repeats the sound. **➡️ Næste** (next) goes to a new random number, even in the middle of a sound. **🏠** goes back to the start screen.
 
 Each number is read once, and it lights up while it is spoken. The same number never comes twice in a row.
 
@@ -67,7 +67,7 @@ The folders also contain a few Italian words (`stasera.mp3`, `venerdi.mp3`, …)
 
 | File | What it does |
 |---|---|
-| `Pages/Home.razor` | Start screen and game: rounds, thinking time, repeat/next, UI texts in both languages |
+| `Pages/Home.razor` | Start screen and game: rounds, thinking time, repeat/next, the Danish UI texts |
 | `Models/GameSettings.cs` | Language, level, mode, delay; number ranges; sound file for a number |
 | `Models/NumberWords.cs` | Spells 0–99 in English (*thirty-one*) and Danish (*enogtredive*) |
 | `Services/AudioPlayer.cs` | C# wrapper around `wwwroot/js/audio.js` |
