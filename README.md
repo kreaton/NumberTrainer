@@ -1,6 +1,12 @@
 # Number Trainer / Taltræner
 
-A small Blazor WebAssembly game for children learning the numbers 0–99 in **Danish** or **English**, using recorded number sounds.
+![Blazor WebAssembly](https://img.shields.io/badge/Blazor-WebAssembly-lightgrey)
+![.NET 10](https://img.shields.io/badge/.NET-10-lightgrey)
+![Installable web app](https://img.shields.io/badge/PWA-installable-lightgrey)
+
+![Number Trainer: learn the numbers 0-99 in Danish or English](images/banner.png)
+
+**A small game for children learning the numbers 0–99 in Danish or English, using recorded number sounds.**
 
 ## How to play
 
