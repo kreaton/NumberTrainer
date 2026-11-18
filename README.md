@@ -4,6 +4,9 @@
 ![.NET 10](https://img.shields.io/badge/.NET-10-lightgrey)
 ![Installable web app](https://img.shields.io/badge/PWA-installable-lightgrey)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/kreaton/NumberTrainer?style=flat&logo=github&color=yellow)](https://github.com/kreaton/NumberTrainer/stargazers)
+
+⭐ If Number Trainer earns a place on your machine, [star it on GitHub](https://github.com/kreaton/NumberTrainer) — it's free, made by one developer, and stars are how other people find it.
 
 ![Number Trainer: learn the numbers 0-99 in Danish or English](images/banner.png)
 
