@@ -86,7 +86,7 @@ The project is in `src/NumberTrainer/`; the paths below are relative to it.
 | `Models/NumberWords.cs` | Spells 0–99 in English (*thirty-one*) and Danish (*enogtredive*) |
 | `Services/AudioPlayer.cs` | C# wrapper around `wwwroot/js/audio.js` |
 | `wwwroot/js/audio.js` | Preloads the level's clips, plays one clip at a time, unlocks sound on iOS |
-| `wwwroot/icon.svg` | App icon source; the PNGs (`apple-touch-icon.png`, `icon-*.png`, `favicon-32.png`) are rendered from it |
+| `wwwroot/icons/` | App icons and favicon, made by `tools/make-icons.ps1` (at the repository root) from `art/icon.svg`; the script also copies the 512 px icon to the KidsGames front page |
 | `wwwroot/manifest.webmanifest` | Name and icons for "Add to Home Screen" |
 | `Components/Flag.razor` | Danish and British flags as inline SVG (flag emoji don't show on Windows) |
 | `wwwroot/css/app.css` | Styling, including dark mode and reduced motion |

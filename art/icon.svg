@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <clipPath id="shape"><rect width="512" height="512" rx="112" /></clipPath>
+    <!-- A full square: iOS, Android and the KidsGames front page round the corners themselves. -->
+    <clipPath id="shape"><rect width="512" height="512" /></clipPath>
     <clipPath id="uk-half"><path d="M512,0 L512,512 L0,512 Z" /></clipPath>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000" flood-opacity="0.3" />
