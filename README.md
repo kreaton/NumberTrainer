@@ -56,7 +56,7 @@ When a game starts, `audio.js` downloads every MP3 for the level so playback sta
 Requires the .NET 10 SDK.
 
 ```bash
-dotnet run --project NumberTrainer --launch-profile http
+dotnet run --project src/NumberTrainer --launch-profile http
 ```
 
 Then open http://localhost:5074. Or open `NumberTrainer.slnx` in Visual Studio and press F5.
@@ -64,18 +64,20 @@ Then open http://localhost:5074. Or open `NumberTrainer.slnx` in Visual Studio a
 To publish as static files (any static web host works):
 
 ```bash
-dotnet publish NumberTrainer -c Release -o publish
+dotnet publish src/NumberTrainer -c Release -o publish
 ```
 
 The site is then in `publish/wwwroot`.
 
 ## Sound files
 
-The recordings live in `NumberTrainer/wwwroot/sounds/<language>/speech<n>.mp3`, where `<language>` is `danish` or `english` and `<n>` is 0–99. To use your own recordings, replace those files with the same names.
+The recordings live in `src/NumberTrainer/wwwroot/sounds/<language>/speech<n>.mp3`, where `<language>` is `danish` or `english` and `<n>` is 0–99. To use your own recordings, replace those files with the same names.
 
 The folders also contain a few Italian words (`stasera.mp3`, `venerdi.mp3`, …) that the app does not use.
 
 ## Project layout
+
+The project is in `src/NumberTrainer/`; the paths below are relative to it.
 
 | File | What it does |
 |---|---|

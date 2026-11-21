@@ -22,7 +22,7 @@ jobs:
 
       - name: Publish .NET App
         # The run number becomes the patch version (1.0.<run>), see Directory.Build.props
-        run: dotnet publish NumberTrainer/NumberTrainer.csproj -c Release -o release -p:BuildNumber=${{ github.run_number }}
+        run: dotnet publish src/NumberTrainer/NumberTrainer.csproj -c Release -o release -p:BuildNumber=${{ github.run_number }}
 
       - name: Upload publish artifact
         uses: actions/upload-artifact@v7

@@ -5,7 +5,6 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="README.md" />
-    <File Path="Run.bat" />
   </Folder>
-  <Project Path="NumberTrainer/NumberTrainer.csproj" />
+  <Project Path="src/NumberTrainer/NumberTrainer.csproj" />
 </Solution>
