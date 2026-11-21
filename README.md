@@ -12,6 +12,8 @@
 
 **A small game for children learning the numbers 0–99 in Danish or English, using recorded number sounds.**
 
+▶️ **Play it:** <https://kreaton.github.io/KidsGames/numbertrainer/>
+
 ## How to play
 
 1. **Pick a language:** 🇩🇰 Dansk or 🇬🇧 Engelsk. This picks the number sounds and spelled words; the app's own texts are always Danish.
